@@ -74,7 +74,8 @@ define RF_PRESENT // <- this line should be commented out if the RFM12B module i
 
 #define DATALOG_PERIOD_IN_SECONDS 10
 
-const byte noOfDumploads = 3; 
+// JJD test on 1 phase const byte noOfDumploads = 3; 
+const byte noOfDumploads = 1; 
 
 enum polarities {NEGATIVE, POSITIVE};
 enum outputModes {ANTI_FLICKER, NORMAL};
