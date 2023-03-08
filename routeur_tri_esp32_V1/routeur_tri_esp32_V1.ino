@@ -137,9 +137,9 @@ const byte sensorI[NO_OF_PHASES] = {1,3,5}; // for 3-phase PCB
 const byte physicalLoad_0_pin = 5; // for 1-phase PCB, Load #1 SCR
 const byte physicalLoad_1_pin = 17; // for 1-phase PCB, Load #2 Relay 1 
 const byte physicalLoad_2_pin = 15; // for 1-phase PCB, Load #3 Relay 2
-// analogue input pins 
-const byte sensorV[NO_OF_PHASES] = {34}; // for 1-phase PCB 
-const byte sensorI[NO_OF_PHASES] = {35}; // for 1-phase PCB 
+// analogue input pins JJD
+const byte sensorV[0] = 34; // for 1-phase PCB 
+const byte sensorI[0] = 35; // for 1-phase PCB 
 
 
 // --------------  general global variables -----------------
@@ -152,6 +152,7 @@ byte initialDelay = 3;  // in seconds, to allow time to open the Serial monitor
 byte startUpPeriod = 3;  // in seconds, to allow LP filter to settle
 
 long DCoffset_V_long[NO_OF_PHASES];              // <--- for LPF
+
 long DCoffset_V_min;               // <--- for LPF (min limit)
 long DCoffset_V_max;               // <--- for LPF (max limit)
 int DCoffset_I_nom;               // nominal mid-point value of ADC @ x1 scale
@@ -180,9 +181,11 @@ float energyStateOfPhase[NO_OF_PHASES]; // only used for datalogging
 
 // for interaction between the main processor and the ISR 
 volatile boolean dataReady = false;
+
 volatile int sampleV[NO_OF_PHASES];
 volatile int sampleI[NO_OF_PHASES];
-
+volatile int sampleV; //JJD
+volatile int sampleI; //JJD
 // For a mechanism to check the continuity of the sampling sequence
 #define CONTINUITY_CHECK_MAXCOUNT 250 // mains cycles
 int mainsCycles_forContinuityChecker;
@@ -464,8 +467,17 @@ void loop()
  // JJD if (dataReady)   // flag is set after every pair of ADC conversions
 // JJ {
       sampleV[0] = analogRead(sensorV[NO_OF_PHASES]) / 4;
+      SampleV =analogRead (34)
+
+      Serial.println ("sampleV") ; //JJD
+      Serial.print( sampleV[0]) ;
+      Searial.print( sampleV) ;
       //sampleV[1] = sample_V1_raw;
       sampleI[0] = analogRead(sensorI[NO_OF_PHASES]) / 4;
+       Serial.println ("sampleI"); //JJD
+       Serial.print( sampleI[0]) ;
+       Searial.print( sampleI) ;
+       
       //sampleI[1] = sample_I1_raw;
       //sampleI[2] = sample_I2_raw;
       //sampleV[2] = ADC;
@@ -543,7 +555,10 @@ void processRawSamples()
     else { 
       polarityNow = NEGATIVE; }
 
+Serial.println (polarityNow) ; // JJD
+
     if (polarityNow == POSITIVE) 
+  
     {                           
       if (polarityOfLastSampleV[phase] != POSITIVE)
       {
@@ -757,6 +772,8 @@ void processRawSamples()
             Serial.print(", ");
             Serial.println(tx_data.Vrms_L3);
 */           
+ Serial.println(tx_data.Vrms_L1); //JJD
+
             energyStateOfPhase[0] = 0;
             energyStateOfPhase[1] = 0;
             energyStateOfPhase[2] = 0;   
