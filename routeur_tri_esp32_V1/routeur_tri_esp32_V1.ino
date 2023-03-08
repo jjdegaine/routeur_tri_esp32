@@ -138,8 +138,8 @@ const byte physicalLoad_0_pin = 5; // for 1-phase PCB, Load #1 SCR
 const byte physicalLoad_1_pin = 17; // for 1-phase PCB, Load #2 Relay 1 
 const byte physicalLoad_2_pin = 15; // for 1-phase PCB, Load #3 Relay 2
 // analogue input pins JJD
-const byte sensorV[0] = 34; // for 1-phase PCB 
-const byte sensorI[0] = 35; // for 1-phase PCB 
+const byte sensorV[NO_OF_PHASES] = {34}; // for 1-phase PCB 
+const byte sensorI[NO_OF_PHASES] = {35}; // for 1-phase PCB 
 
 
 // --------------  general global variables -----------------
@@ -184,8 +184,8 @@ volatile boolean dataReady = false;
 
 volatile int sampleV[NO_OF_PHASES];
 volatile int sampleI[NO_OF_PHASES];
-volatile int sampleV; //JJD
-volatile int sampleI; //JJD
+volatile int sampleV_test; //JJD
+volatile int sampleI_test; //JJD
 // For a mechanism to check the continuity of the sampling sequence
 #define CONTINUITY_CHECK_MAXCOUNT 250 // mains cycles
 int mainsCycles_forContinuityChecker;
@@ -236,6 +236,13 @@ int phaseCal_int[NO_OF_PHASES];           // to avoid the need for floating-poin
 //JJD const float voltageCal[NO_OF_PHASES] = {1.03, 1.03, 1.03}; // compared with Fluke 77 meter
 
 const float voltageCal[NO_OF_PHASES] = {1.03}; // compared with Fluke 77 meter
+
+// jjd test with adc control 
+boolean adcV = false ; 
+boolean adcVon = false ;
+boolean adcI = false ; 
+boolean adcIon = false ;
+boolean adcBusy ;
 
 
 void setup()
@@ -360,6 +367,9 @@ void setup()
    else {  
      Serial.println ( "load 1"); }
 
+analogReadResolution (10); //JJD 10 bits sample
+analogSetWidth(10);
+
 /* JJD
    Serial.println();
    Serial.print ("free RAM = ");
@@ -392,7 +402,7 @@ void setup()
 // and set up the conditions for conversion Type N+2, and so on.  
 // 
 
-/* JD ADC interrupt is not available on ESP32 so ADC is read in the loop program
+/* JJD ADC interrupt is not available on ESP32 so ADC is read in the loop program
 ISR(ADC_vect)  
 {                                         
   static unsigned char sample_index = 0;
@@ -466,25 +476,45 @@ void loop()
   
  // JJD if (dataReady)   // flag is set after every pair of ADC conversions
 // JJ {
-      sampleV[0] = analogRead(sensorV[NO_OF_PHASES]) / 4;
-      SampleV =analogRead (34)
-
-      Serial.println ("sampleV") ; //JJD
-      Serial.print( sampleV[0]) ;
-      Searial.print( sampleV) ;
-      //sampleV[1] = sample_V1_raw;
-      sampleI[0] = analogRead(sensorI[NO_OF_PHASES]) / 4;
-       Serial.println ("sampleI"); //JJD
-       Serial.print( sampleI[0]) ;
-       Searial.print( sampleI) ;
-       
-      //sampleI[1] = sample_I1_raw;
-      //sampleI[2] = sample_I2_raw;
-      //sampleV[2] = ADC;
-
+      /*12 bits sample
+      sampleV[0] = analogRead(34) / 4;
+      
+      sampleI[0] = analogRead(35) / 4;
+*/
+/* 10 bits sample JJD
+      sampleV[0] = analogRead(34) ;
+      
+      sampleI[0] = analogRead(35) ;
     dataReady = false; // reset the flag
     processRawSamples(); // executed once for each pair of V&I samples
-    
+*/
+
+if (adcI == true)
+{
+adcV= false ; 
+adcAttachPin(34) ; // read pin 34 Voltage
+adcStart ;
+adcVon = true 
+if (adcBusy(34) == true || adcVon == true)
+    {sampleV[0]= resultadcEnd(34);
+    adcV= true ;
+    adcVon = false ;
+    }
+}
+if (adcV == true) 
+  {
+  advI = false ;
+  adcAttachPin(35) ; // read pin 35 Current
+  adcStart ;
+  adCIon = true ;
+if (adcBusy(35) == true || adcIon == true)
+    {sampleI[0]= resultadcEnd(35);
+    adcI = true ;
+    adcIon = false ;
+    }
+}
+
+
 #ifdef WORKLOAD_CHECK 
     delayMicroseconds(del); // <--- to assess how much spare time there is
     if (dataReady)       // if data is ready again, delay was too long
@@ -541,7 +571,7 @@ void processRawSamples()
   static long sum_Vsquared[NO_OF_PHASES];                         
   static long samplesDuringThisDatalogPeriod;
   enum polarities polarityNow;  
-  
+
   // The raw V and I samples are processed in "phase pairs"
   for (byte phase = 0; phase < NO_OF_PHASES; phase++)
   {
@@ -555,7 +585,6 @@ void processRawSamples()
     else { 
       polarityNow = NEGATIVE; }
 
-Serial.println (polarityNow) ; // JJD
 
     if (polarityNow == POSITIVE) 
   
