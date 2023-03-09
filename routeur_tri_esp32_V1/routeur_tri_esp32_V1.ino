@@ -237,12 +237,6 @@ int phaseCal_int[NO_OF_PHASES];           // to avoid the need for floating-poin
 
 const float voltageCal[NO_OF_PHASES] = {1.03}; // compared with Fluke 77 meter
 
-// jjd test with adc control 
-boolean adcV = false ; 
-boolean adcVon = false ;
-boolean adcI = false ; 
-boolean adcIon = false ;
-boolean adcBusy ;
 
 
 void setup()
@@ -481,38 +475,11 @@ void loop()
       
       sampleI[0] = analogRead(35) / 4;
 */
-/* 10 bits sample JJD
+10 bits sample JJD
       sampleV[0] = analogRead(34) ;
-      
       sampleI[0] = analogRead(35) ;
     dataReady = false; // reset the flag
     processRawSamples(); // executed once for each pair of V&I samples
-*/
-
-if (adcI == true)
-{
-adcV= false ; 
-adcAttachPin(34) ; // read pin 34 Voltage
-adcStart ;
-adcVon = true 
-if (adcBusy(34) == true || adcVon == true)
-    {sampleV[0]= resultadcEnd(34);
-    adcV= true ;
-    adcVon = false ;
-    }
-}
-if (adcV == true) 
-  {
-  advI = false ;
-  adcAttachPin(35) ; // read pin 35 Current
-  adcStart ;
-  adCIon = true ;
-if (adcBusy(35) == true || adcIon == true)
-    {sampleI[0]= resultadcEnd(35);
-    adcI = true ;
-    adcIon = false ;
-    }
-}
 
 
 #ifdef WORKLOAD_CHECK 
